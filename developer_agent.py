@@ -143,3 +143,47 @@ Follow these rules strictly:
     code = code.strip()
 
     return validate_code(code)
+
+"""APPEND this implementation to your ORIGINAL developer_agent.py; do not replace it."""
+import ast as _ast
+import json as _json
+from pathlib import Path as _Path
+
+REVISION_SYSTEM_PROMPT = '''You are a robot-navigation Developer Agent. Revise the
+existing Python decide_next_move(state) function using the user-provided
+requirements, planner output, discrete simulation review, and IR-SIM benchmark.
+Return ONLY valid Python source defining decide_next_move(state).
+State has boolean keys front_blocked, left_blocked, right_blocked, goal_ahead,
+goal_on_left, goal_on_right. Return FORWARD, LEFT, RIGHT or STOP.
+Avoid blocked routes. Keep compatible with the IR-SIM caller.'''
+
+
+def run_developer_revision(original_navigation_code, review_notes,
+                           benchmark_report, requirements, plan, llm=None,
+                           output_path='generated/navigation_logic_revised.py'):
+    """llm(system_prompt, user_prompt)->Python source; integrate project LLM caller."""
+    if llm is None:
+        llm = ollama_llm
+    prompt = _json.dumps({'original_code': original_navigation_code,
+        'review_notes': review_notes, 'benchmark_report': benchmark_report,
+        'requirements': requirements, 'plan': plan}, ensure_ascii=False, default=str)
+    code = llm(REVISION_SYSTEM_PROMPT, prompt).strip()
+    if code.startswith('```'):
+        raise ValueError('Developer revision must return plain Python, not markdown')
+    tree = _ast.parse(code)
+    if not any(isinstance(node, _ast.FunctionDef) and node.name == 'decide_next_move' for node in tree.body):
+        raise ValueError('Revised code must define decide_next_move')
+    target = _Path(output_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(code + '\n', encoding='utf-8')
+    return str(target)
+
+
+def ollama_llm(system_prompt, user_prompt):
+    """Match the original qwen3:8b Ollama setup."""
+    response = ollama.Client(timeout=180).chat(
+        model="qwen3:8b", messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}],
+        think=False, options={"temperature": 0, "num_predict": 2048})
+    return response["message"]["content"].strip()

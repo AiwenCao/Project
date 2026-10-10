@@ -1,22 +1,22 @@
 {
-    "strategy": "Proactive Obstacle-Avoidance with Goal-Driven Movement",
-    "decisions": [
-        {
-            "condition": "forward direction is unobstructed and aligns with the goal",
-            "action": "FORWARD"
-        },
-        {
-            "condition": "left direction is unobstructed and aligns with the goal",
-            "action": "LEFT"
-        },
-        {
-            "condition": "right direction is unobstructed and aligns with the goal",
-            "action": "RIGHT"
-        },
-        {
-            "condition": "no safe movement directions are available",
-            "action": "STOP"
-        }
-    ],
-    "stop_condition": "when the robot reaches the target location or cannot move safely in any direction"
+  "strategy": "Proactive Obstacle-Avoidance with Goal-Driven Movement",
+  "decisions": [
+    {
+      "condition": "forward direction is unobstructed and aligns with the goal",
+      "action": "FORWARD"
+    },
+    {
+      "condition": "left direction is unobstructed and aligns with the goal",
+      "action": "LEFT"
+    },
+    {
+      "condition": "right direction is unobstructed and aligns with the goal",
+      "action": "RIGHT"
+    },
+    {
+      "condition": "no safe movement directions are available",
+      "action": "STOP"
+    }
+  ],
+  "stop_condition": "when the robot reaches the target location or cannot move safely in any direction"
 }
